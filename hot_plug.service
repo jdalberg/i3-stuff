@@ -1,0 +1,13 @@
+# install under /etc/systemd/system/hot_plug.service
+[Unit]
+Description=Monitor hotplug
+
+[Service]
+Type=simple
+RemainAfterExit=no
+User=<USER>
+ExecStart=/home/<USER>/.i3/set_workspaces
+
+[Install]
+WantedBy=multi-user.target
+

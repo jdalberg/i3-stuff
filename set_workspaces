@@ -1,0 +1,55 @@
+#!/bin/sh
+
+X_USER=__USER__
+export DISPLAY=:0
+export XAUTHORITY=/home/$X_USER/.Xauthority
+
+## Determine number of display ports in action
+NMON=$(xrandr|egrep "DisplayPort-[0-9] connected"|wc -l)
+
+## Configure panel from left side
+case $NMON in
+1)
+  # Only 1 external monitor connected, find the port...
+  DP=$(xrandr | grep -E "DisplayPort-[01] connected" | grep -oE "DisplayPort-[01]")
+  xrandr --output eDP --mode 1920x1200 --output $DP --mode 1920x1200 --right-of eDP
+  ;;
+2)
+  # assume home office and that both display ports are set up the way i normally do it
+  xrandr --output eDP --mode 1920x1200 --output DisplayPort-1 --mode 1920x1200 --right-of eDP --rotate left --output DisplayPort-0 --mode 2560x1440 --right-of DisplayPort-1
+  ;;
+*)
+  # just adjust mode of primary screen
+  xrandr --output eDP --mode 1920x1200
+  ;;
+esac
+
+
+# If there is some external screen attached, move workspaces there.
+case $NMON in
+0)
+  # no externals, move all workspaces to eDP
+  for w in 2 3 4 5 6 7 8 9 10; do
+    i3-msg "workspace $w; move workspace to output eDP"
+  done
+  ;;
+1)
+  # Assume 1 normally rotated extra screen, move 2-5 there
+  DP=$(xrandr | grep -E "DisplayPort-[01] connected" | grep -oE "DisplayPort-[01]")
+  for w in 2 3 4 5 6 7 8 9 10; do
+    i3-msg "workspace $w; move workspace to output $DP"
+  done
+  ;;
+2)
+  # workspace 2 on DisplayPort-1 (flipped) and rest on DisplayPort-0 (normal)
+  i3-msg "workspace 2; move workspace to output DisplayPort-1"
+  for w in 3 4 5 6 7 8 9 10; do
+    i3-msg "workspace $w; move workspace to output DisplayPort-0"
+  done
+  ;;
+*)
+  ;;
+esac
+
+xrefresh &
+
