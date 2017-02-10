@@ -1,3 +1,4 @@
 # Detect when there is a change in the display settings
+# goes to /etc/udev/rules.d/
 ACTION=="change", KERNEL=="card0", SUBSYSTEM=="drm", RUN+="/usr/bin/systemctl start hot_plug.service"
 
